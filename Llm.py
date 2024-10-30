@@ -1,16 +1,10 @@
 import string
 from typing import Union, Dict
 import logger
+import typing
 
 class OpenAILLM():
-    """Class for OpenAI LLM
-    Attributes:
-        api_key (str): OpenAI API Key
-        model (Model): OpenAI LLM Model
-        temperature (float): Temperature for generating reply
-        frequency_penalty (float): Frequency penalty for generating reply
-        presence_penalty (float): Presence penalty for generating reply"""
-
+   
     def __init__(
         self,
         api_key: str,
@@ -19,14 +13,7 @@ class OpenAILLM():
         frequency_penalty: float = 0,
         presence_penalty: float = 0,
     ):
-        """Initialize OpenAI LLM
-        Args:
-            api_key (str): OpenAI API Key
-            model (Model): OpenAI LLM Model
-            temperature (float): Temperature for generating reply
-            frequency_penalty (float): Frequency penalty for generating reply
-            presence_penalty (float): Presence penalty for generating reply
-        """
+       
         self.api_key = api_key
         self.model = model
         self.temperature = temperature
@@ -36,18 +23,12 @@ class OpenAILLM():
 
     def get_reply(
         self,
-        prompt: Optional[str] = None,
-        system_prompt: Optional[str] = None,
-        messages: List[Dict[str, str]] = [],
+        prompt: typing.Optional[str] = None,
+        system_prompt: typing.Optional[str] = None,
+        messages: typing.List[Dict[str, str]] = [],
         **kwargs,
     ) -> str:
-        """Get reply from OpenAI LLM
-        Args:
-            prompt (Optional[str]): Prompt to be used for generating reply
-            system_prompt (Optional[str]): System prompt to be used for generating reply
-            messages (List[Dict[str, str]]): List of messages to be used for generating reply
-        Returns:
-            str: Reply from OpenAI LLM"""
+        
         if not prompt and not system_prompt and not messages:
             raise ValueError(
                 "Please provide either messages or prompt and system_prompt"
@@ -88,3 +69,22 @@ class OpenAILLM():
             logger.error(f"OpenAI API Invalid Request Error: {e}")
             raise Exception(f"OpenAI API Invalid Request Error: {e}")
         return response["choices"][0]["message"]["content"].strip()
+
+
+    def get_code(
+        self,
+        prompt: typing.Optional[str] = None,
+        system_prompt: typing.Optional[str] = None,
+        messages: typing.List[Dict[str, str]] = [],
+        **kwargs,
+    ) -> str:
+       
+        reply = self.get_reply(prompt, system_prompt, messages)
+        pattern = r"```.*?\n(.*?)```"
+        matches = re.findall(pattern, reply, re.DOTALL)
+
+        if matches:
+            code = matches[0].strip()
+            return code
+        else:
+            return reply
